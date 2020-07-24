@@ -1681,6 +1681,7 @@
 		qcom,rmnet-ipa-ssr;
 		qcom,ipa-platform-type-msm;
 		qcom,ipa-advertise-sg-support;
+		qcom,ipa-napi-enable;
 	};
 
 	spmi_bus: qcom,spmi@200f000 {
