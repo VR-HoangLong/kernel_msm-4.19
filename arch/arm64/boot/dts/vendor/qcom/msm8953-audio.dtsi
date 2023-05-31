@@ -1,3 +1,4 @@
+#include <dt-bindings/clock/qcom,audio-ext-clk.h>
 
 #include "msm-audio-lpass.dtsi"
 #include "msm8953-wsa881x.dtsi"
@@ -8,10 +9,10 @@
 };
 
 &soc {
-	qcom,msm-audio-apr {
+	audio_apr: qcom,msm-audio-apr {
 		compatible = "qcom,msm-audio-apr";
-		msm_audio_apr_dummy {
-			compatible = "qcom,msm-audio-apr-dummy";
+		q6core: q6core {
+			compatible = "qcom,q6core-audio";
 		};
 	};
 
@@ -161,11 +162,14 @@
 			status = "okay";
 			compatible = "qcom,wsa881x-i2c-codec";
 			reg = <0x0f>;
+			clock-names = "wsa_mclk";
+			clocks = <&wsa881x_analog_clk 0>;
 			qcom,wsa-analog-vi-gpio = <&wsa881x_analog_vi_gpio>;
 			qcom,wsa-analog-clk-gpio = <&wsa881x_analog_clk_gpio>;
 			qcom,wsa-analog-reset-gpio =
 				<&wsa881x_analog_reset_gpio>;
 		};
+
 		wsa881x_i2c_45: wsa881x-i2c-codec@45 {
 			status = "okay";
 			compatible = "qcom,wsa881x-i2c-codec";
@@ -179,6 +183,7 @@
 		pinctrl-0 = <&wsa_vi_on>;
 		pinctrl-1 = <&wsa_vi_off>;
 	};
+
 	wsa881x_analog_clk_gpio: wsa881x_analog_clk_pctrl {
 		compatible = "qcom,msm-cdc-pinctrl";
 		pinctrl-names = "aud_active", "aud_sleep";
@@ -190,6 +195,14 @@
 		pinctrl-names = "aud_active", "aud_sleep";
 		pinctrl-0 = <&wsa_reset_on>;
 		pinctrl-1 = <&wsa_reset_off>;
+	};
+
+	wsa881x_analog_clk: wsa_ana_clk {
+		compatible = "qcom,audio-ref-clk";
+		qcom,codec-ext-clk-src = <AUDIO_LPASS_MCLK_2>;
+		qcom,codec-lpass-ext-clk-freq = <9600000>;
+		qcom,codec-lpass-clk-id = <0x300>;
+		#clock-cells = <1>;
 	};
 
 	ext_codec: sound-9335 {
@@ -318,6 +331,8 @@
 	clock_audio: audio_ext_clk {
 		status = "disabled";
 		compatible = "qcom,audio-ref-clk";
+		qcom,use-pinctrl = <1>;
+		qcom,codec-ext-clk-src = <14>;
 		clock-names = "osr_clk";
 		qcom,node_has_rpm_clock;
 		#clock-cells = <1>;
@@ -325,7 +340,7 @@
 		pinctrl-0 = <&tasha_mclk_default>;
 		pinctrl-1 = <&tasha_mclk_default>;
 		qcom,audio-ref-clk-gpio = <&pm8953_gpios 1 0>;
-		clocks = <&clock_gcc clk_div_clk2>;
+		clocks = <&rpmcc RPM_SMD_DIV_CLK2>;
 	};
 
 	wcd_rst_gpio: msm_cdc_pinctrl@67 {
@@ -360,9 +375,8 @@
 
 		qcom,wcd-rst-gpio-node = <&wcd_rst_gpio>;
 
-		clock-names = "wcd_clk", "wcd_native_clk";
-		clocks = <&clock_audio clk_audio_pmi_clk>,
-			<&clock_audio clk_audio_ap_clk2>;
+		clock-names = "wcd_clk";
+		clocks = < &clock_audio 0>;
 
 		qcom,cdc-static-supplies =
 				"cdc-vdd-buck",
